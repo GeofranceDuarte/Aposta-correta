@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jogos Ao Vivo - Odds Favoráveis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #58a6ff;
+      margin-bottom: 1rem;
+    }
+    .game-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .card h3 {
+      margin: 0 0 0.5rem 0;
+      color: #58a6ff;
+    }
+    .card p {
+      margin: 0.25rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jogos ao Vivo com 2 Gols de Diferença e Odds Favoráveis</h1>
+  <div class="game-list" id="gamesContainer">Carregando jogos...</div>
+  <script src="script.js"></script>
+</body>
+</html>
