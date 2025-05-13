@@ -12,6 +12,7 @@ async function fetchLiveMatches() {
   try {
     const res = await fetch(url, { headers });
     const data = await res.json();
+    console.log("Resposta da API:", data); // Ajuda a depurar
 
     const filtered = data.response.filter(f => {
       const goals = f.goals;
@@ -33,7 +34,6 @@ async function fetchLiveMatches() {
       const status = game.fixture.status;
       const odds = (Math.random() * (1.15 - 1.03) + 1.03).toFixed(2); // Simulando odds
 
-      // Ícone baseado no status do jogo
       const statusIcon = getStatusIcon(status.short);
       const statusText = status.long;
 
@@ -60,15 +60,15 @@ async function fetchLiveMatches() {
   }
 }
 
-// Função para retornar ícone com base no status
 function getStatusIcon(short) {
   switch (short) {
-    case "1H": return "fas fa-clock";          // Primeiro tempo
-    case "2H": return "fas fa-stopwatch";      // Segundo tempo
-    case "HT": return "fas fa-mug-hot";        // Intervalo
-    case "FT": return "fas fa-flag-checkered"; // Encerrado
-    case "NS": return "fas fa-hourglass-start";// Não iniciado
-    default:   return "fas fa-info-circle";    // Outro
+    case "1H": return "fas fa-clock";
+    case "2H": return "fas fa-stopwatch";
+    case "HT": return "fas fa-mug-hot";
+    case "FT": return "fas fa-flag-checkered";
+    case "NS": return "fas fa-hourglass-start";
+    default:   return "fas fa-info-circle";
+  }
 }
 
 fetchLiveMatches();
