@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -42,6 +41,7 @@
       padding: 0.75rem;
       border: none;
       border-radius: 5px;
+      width: 100%;
     }
 
     button {
@@ -72,7 +72,25 @@
       border: 1px solid #30363d;
     }
 
-    /* Estilo do botão flutuante do WhatsApp */
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .password-wrapper input {
+      width: 100%;
+    }
+
+    .eye-icon {
+      position: absolute;
+      right: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      user-select: none;
+      color: #58a6ff;
+    }
+
     .whatsapp-float {
       position: fixed;
       bottom: 20px;
@@ -104,7 +122,12 @@
     <form id="authForm">
       <input type="text" id="nameField" placeholder="Nome completo" style="display:none;" required />
       <input type="email" id="emailField" placeholder="Email" required />
-      <input type="password" id="passwordField" placeholder="Senha" required />
+      
+      <div class="password-wrapper">
+        <input type="password" id="passwordField" placeholder="Senha" required />
+        <span id="togglePassword" class="eye-icon">👁️</span>
+      </div>
+
       <button type="submit" id="submitBtn">Entrar</button>
     </form>
 
@@ -113,12 +136,10 @@
     <div id="pixKey">Chave Pix: <strong>21996283590</strong></div>
   </div>
 
-  <!-- Botão flutuante do WhatsApp -->
   <a href="https://wa.me/5521996283590" class="whatsapp-float" target="_blank" title="Fale conosco no WhatsApp">
     <i class="fab fa-whatsapp"></i>
   </a>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js';
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js';
@@ -143,6 +164,7 @@
     const formTitle = document.getElementById('formTitle');
     const toggleMode = document.getElementById('toggleMode');
     const pixKey = document.getElementById('pixKey');
+    const togglePassword = document.getElementById('togglePassword');
 
     let isLogin = true;
 
@@ -160,6 +182,12 @@
         submitBtn.textContent = 'Cadastrar';
         toggleMode.textContent = 'Já tem conta? Faça login';
       }
+    });
+
+    togglePassword.addEventListener('click', () => {
+      const type = passwordField.type === 'password' ? 'text' : 'password';
+      passwordField.type = type;
+      togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
     });
 
     form.addEventListener('submit', (e) => {
