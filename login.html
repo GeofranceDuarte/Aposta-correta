@@ -213,7 +213,7 @@
           await setDoc(doc(db, 'usuarios', user.uid), {
             nome: nameField.value,
             email: email,
-            liberado: false, // Usuário ainda não está liberado
+            status: false, // Usuário ainda não está liberado
           });
 
           pixKey.style.display = 'block';
