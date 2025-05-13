@@ -1,4 +1,3 @@
-
 const apiKey = "8f612f2a4bb97e35422cf82fb9b7041f";
 const gamesContainer = document.getElementById("gamesContainer");
 
@@ -23,30 +22,55 @@ async function fetchLiveMatches() {
 
     gamesContainer.innerHTML = "";
 
+    if (filtered.length === 0) {
+      gamesContainer.innerHTML = "Nenhum jogo com os critérios no momento.";
+      return;
+    }
+
     filtered.forEach(game => {
       const { home, away } = game.teams;
       const { home: gHome, away: gAway } = game.goals;
+      const status = game.fixture.status;
       const odds = (Math.random() * (1.15 - 1.03) + 1.03).toFixed(2); // Simulando odds
 
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <h3>${home.name} vs ${away.name}</h3>
-        <p><strong>Placar:</strong> ${gHome} - ${gAway}</p>
-        <p><strong>Odd Simulada:</strong> ${odds}</p>
-        <p><strong>Status:</strong> ${game.fixture.status.long}</p>
+      // Ícone baseado no status do jogo
+      const statusIcon = getStatusIcon(status.short);
+      const statusText = status.long;
+
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="teams">
+          <span class="team-home">${home.name}</span>
+          <span class="team-away">${away.name}</span>
+        </div>
+        <div class="score">${gHome} - ${gAway}</div>
+        <div class="odds">Odd Simulada: ${odds}</div>
+        <div class="status">
+          <i class="${statusIcon}"></i> ${statusText}
+        </div>
       `;
-      gamesContainer.appendChild(div);
+
+      gamesContainer.appendChild(card);
     });
 
-    if (filtered.length === 0) {
-      gamesContainer.innerHTML = "Nenhum jogo com os critérios no momento.";
-    }
   } catch (err) {
     gamesContainer.innerHTML = "Erro ao buscar os jogos.";
     console.error(err);
   }
 }
 
+// Função para retornar ícone com base no status
+function getStatusIcon(short) {
+  switch (short) {
+    case "1H": return "fas fa-clock";          // Primeiro tempo
+    case "2H": return "fas fa-stopwatch";      // Segundo tempo
+    case "HT": return "fas fa-mug-hot";        // Intervalo
+    case "FT": return "fas fa-flag-checkered"; // Encerrado
+    case "NS": return "fas fa-hourglass-start";// Não iniciado
+    default:   return "fas fa-info-circle";    // Outro
+}
+
 fetchLiveMatches();
 setInterval(fetchLiveMatches, 60000);
+
