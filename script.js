@@ -2,11 +2,7 @@ const apiKey = "8f612f2a4bb97e35422cf82fb9b7041f";
 const gamesContainer = document.getElementById("gamesContainer");
 
 async function fetchLiveMatches() {
-  gamesContainer.innerHTML = `
-    <div style="text-align:center;">
-      <i class="fas fa-spinner fa-spin"></i> Carregando jogos ao vivo...
-    </div>
-  `;
+  gamesContainer.innerHTML = "Carregando jogos...";
 
   const url = "https://v3.football.api-sports.io/fixtures?live=all";
   const headers = {
@@ -28,11 +24,7 @@ async function fetchLiveMatches() {
     gamesContainer.innerHTML = "";
 
     if (filtered.length === 0) {
-      gamesContainer.innerHTML = `
-        <div style="text-align:center; color: #ccc;">
-          <i class="fas fa-info-circle"></i> Nenhum jogo com 2 gols de diferença no momento.
-        </div>
-      `;
+      gamesContainer.innerHTML = "Nenhum jogo com os critérios no momento.";
       return;
     }
 
@@ -40,6 +32,7 @@ async function fetchLiveMatches() {
       const { home, away } = game.teams;
       const { home: gHome, away: gAway } = game.goals;
       const status = game.fixture.status;
+      const league = game.league;
       const odds = parseFloat((Math.random() * (1.15 - 1.03) + 1.03)).toFixed(2);
 
       const statusIcon = getStatusIcon(status.short);
@@ -48,6 +41,10 @@ async function fetchLiveMatches() {
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
+        <div class="league" style="font-size: 0.85rem; margin-bottom: 0.4rem; color: #8b949e;">
+          <img src="${league.logo}" alt="Logo da liga" style="height: 16px; vertical-align: middle; margin-right: 5px;">
+          ${league.name} - ${league.country}
+        </div>
         <div class="teams">
           <span class="team-home">${home.name}</span>
           <span class="team-away">${away.name}</span>
@@ -63,26 +60,21 @@ async function fetchLiveMatches() {
     });
 
   } catch (err) {
-    gamesContainer.innerHTML = `
-      <div style="text-align:center; color: #e74c3c;">
-        <i class="fas fa-exclamation-triangle"></i> Erro ao buscar os jogos.
-      </div>
-    `;
+    gamesContainer.innerHTML = "Erro ao buscar os jogos.";
     console.error(err);
   }
 }
 
 function getStatusIcon(short) {
   switch (short) {
-    case "1H": return "fas fa-clock"; // 1º tempo
-    case "2H": return "fas fa-stopwatch"; // 2º tempo
-    case "HT": return "fas fa-mug-hot"; // intervalo
-    case "FT": return "fas fa-flag-checkered"; // finalizado
-    case "NS": return "fas fa-hourglass-start"; // ainda não começou
+    case "1H": return "fas fa-clock";            // Primeiro tempo
+    case "2H": return "fas fa-stopwatch";        // Segundo tempo
+    case "HT": return "fas fa-mug-hot";          // Intervalo
+    case "FT": return "fas fa-flag-checkered";   // Encerrado
+    case "NS": return "fas fa-hourglass-start";  // Ainda não começou
     default:   return "fas fa-info-circle";
   }
 }
 
-// Primeira carga + atualização a cada 60s
 fetchLiveMatches();
 setInterval(fetchLiveMatches, 60000);
