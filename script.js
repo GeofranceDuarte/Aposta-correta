@@ -34,7 +34,19 @@ async function fetchLiveMatches() {
       const status = game.fixture.status;
       const league = game.league;
       const odds = parseFloat((Math.random() * (1.15 - 1.03) + 1.03)).toFixed(2);
+      const stats = game.statistics;
 
+      // Coletando novas informações
+      const time = status.elapsed ? `${status.elapsed}'` : "Aguarde...";
+      const yellowCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Yellow Cards")?.value || 0;
+      const yellowCardsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Yellow Cards")?.value || 0;
+      const redCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Red Cards")?.value || 0;
+      const redCardsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Red Cards")?.value || 0;
+      const possessionHome = stats.find(stat => stat.team.id === home.id && stat.type === "Possession")?.value || 0;
+      const possessionAway = stats.find(stat => stat.team.id === away.id && stat.type === "Possession")?.value || 0;
+      const shotsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Shots")?.value || 0;
+      const shotsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Shots")?.value || 0;
+      
       const statusIcon = getStatusIcon(status.short);
       const statusText = status.long;
 
@@ -52,7 +64,13 @@ async function fetchLiveMatches() {
         <div class="score">${gHome} - ${gAway}</div>
         <div class="odds">🎯 Odd Simulada: <strong>${odds}</strong></div>
         <div class="status" title="${statusText}">
-          <i class="${statusIcon}"></i> ${statusText}
+          <i class="${statusIcon}"></i> ${statusText} - ${time}
+        </div>
+        <div class="game-stats">
+          <p><strong>Cartões Amarelos:</strong> ${home.name}: ${yellowCardsHome} | ${away.name}: ${yellowCardsAway}</p>
+          <p><strong>Cartões Vermelhos:</strong> ${home.name}: ${redCardsHome} | ${away.name}: ${redCardsAway}</p>
+          <p><strong>Posse de Bola:</strong> ${home.name}: ${possessionHome}% | ${away.name}: ${possessionAway}%</p>
+          <p><strong>Finalizações:</strong> ${home.name}: ${shotsHome} | ${away.name}: ${shotsAway}</p>
         </div>
       `;
 
