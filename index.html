@@ -7,6 +7,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -16,20 +20,24 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      position: relative;
     }
 
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background-color: rgba(13, 17, 23, 0.9);
+      background-color: rgba(13, 17, 23, 0.92);
       z-index: -1;
     }
 
     .logo-img {
-      width: 220px;
+      width: 200px;
+      max-width: 90%;
       margin-bottom: 1.5rem;
+      filter: drop-shadow(0 0 8px rgba(88, 166, 255, 0.3));
     }
 
     .game-list {
@@ -63,7 +71,7 @@
 
     .score {
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       margin: 0.5rem 0;
     }
 
@@ -80,6 +88,7 @@
       margin-top: 0.5rem;
       font-weight: 600;
       color: #2ecc71;
+      text-align: center;
     }
 
     .team-home {
@@ -99,7 +108,7 @@
   
   <img src="aposta-correta-logo.png" alt="Logo Aposta Correta" class="logo-img">
 
-  <div class="game-list" id="gamesContainer">Carregando jogos...</div>
+  <div class="game-list" id="gamesContainer">Carregando jogos ao vivo...</div>
 
   <script src="script.js"></script>
 
@@ -112,7 +121,7 @@
       apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
       authDomain: "apostacerta-ba573.firebaseapp.com",
       projectId: "apostacerta-ba573",
-      storageBucket: "apostacerta-ba573.firebasestorage.app",
+      storageBucket: "apostacerta-ba573.appspot.com",
       messagingSenderId: "651513600994",
       appId: "1:651513600994:web:6bdd161f5cf1d177f037bb"
     };
@@ -122,11 +131,9 @@
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
+        window.location.href = "login.html";
       }
     });
   </script>
 </body>
 </html>
-
-
