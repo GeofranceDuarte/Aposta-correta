@@ -113,6 +113,12 @@
     .whatsapp-float:hover {
       transform: scale(1.1);
     }
+
+    #goToLoginBtn {
+      display: none;
+      margin-top: 1rem;
+      background: #58a6ff;
+    }
   </style>
 </head>
 <body>
@@ -120,7 +126,7 @@
     <h2 id="formTitle">Login</h2>
 
     <form id="authForm">
-      <input type="text" id="nameField" placeholder="Nome completo" style="display:none;" required />
+      <input type="text" id="nameField" placeholder="Nome completo" style="display:none;" />
       <input type="email" id="emailField" placeholder="Email" required />
       
       <div class="password-wrapper">
@@ -129,6 +135,7 @@
       </div>
 
       <button type="submit" id="submitBtn">Entrar</button>
+      <button type="button" id="goToLoginBtn">Ir para o login</button>
     </form>
 
     <div class="toggle" id="toggleMode">Ainda não tem conta? Cadastre-se</div>
@@ -143,7 +150,7 @@
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js';
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js';
-    import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js';
+    import { getFirestore, doc, setDoc } from 'https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
@@ -167,23 +174,19 @@
     const toggleMode = document.getElementById('toggleMode');
     const pixKey = document.getElementById('pixKey');
     const togglePassword = document.getElementById('togglePassword');
+    const goToLoginBtn = document.getElementById('goToLoginBtn');
 
     let isLogin = true;
 
     toggleMode.addEventListener('click', () => {
       isLogin = !isLogin;
-      if (isLogin) {
-        nameField.style.display = 'none';
-        formTitle.textContent = 'Login';
-        submitBtn.textContent = 'Entrar';
-        toggleMode.textContent = 'Ainda não tem conta? Cadastre-se';
-        pixKey.style.display = 'none';
-      } else {
-        nameField.style.display = 'block';
-        formTitle.textContent = 'Cadastro';
-        submitBtn.textContent = 'Cadastrar';
-        toggleMode.textContent = 'Já tem conta? Faça login';
-      }
+      nameField.style.display = isLogin ? 'none' : 'block';
+      nameField.required = !isLogin;
+      formTitle.textContent = isLogin ? 'Login' : 'Cadastro';
+      submitBtn.textContent = isLogin ? 'Entrar' : 'Cadastrar';
+      toggleMode.textContent = isLogin ? 'Ainda não tem conta? Cadastre-se' : 'Já tem conta? Faça login';
+      pixKey.style.display = 'none';
+      goToLoginBtn.style.display = 'none';
     });
 
     togglePassword.addEventListener('click', () => {
@@ -192,10 +195,21 @@
       togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
     });
 
+    goToLoginBtn.addEventListener('click', () => {
+      isLogin = true;
+      nameField.style.display = 'none';
+      nameField.required = false;
+      formTitle.textContent = 'Login';
+      submitBtn.textContent = 'Entrar';
+      toggleMode.textContent = 'Ainda não tem conta? Cadastre-se';
+      pixKey.style.display = 'none';
+      goToLoginBtn.style.display = 'none';
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = emailField.value;
-      const password = passwordField.value;
+      const email = emailField.value.trim();
+      const password = passwordField.value.trim();
 
       if (isLogin) {
         signInWithEmailAndPassword(auth, email, password)
@@ -203,25 +217,45 @@
             alert('Login realizado com sucesso!');
             window.location.href = 'index.html';
           })
-          .catch(error => alert(error.message));
+          .catch(error => {
+            const msg = traduzErro(error.code);
+            alert(msg);
+          });
       } else {
+        if (!nameField.value.trim()) {
+          alert('Por favor, preencha seu nome completo.');
+          return;
+        }
+
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
-          
-          // Salvando os dados do usuário no Firestore
           await setDoc(doc(db, 'usuarios', user.uid), {
-            nome: nameField.value,
+            nome: nameField.value.trim(),
             email: email,
-            status: false, // Usuário ainda não está liberado
+            status: false,
           });
-
           pixKey.style.display = 'block';
+          goToLoginBtn.style.display = 'block';
+          alert('Cadastro realizado! Salve a chave Pix abaixo.');
         } catch (error) {
-          alert(error.message);
+          const msg = traduzErro(error.code);
+          alert(msg);
         }
       }
     });
+
+    function traduzErro(code) {
+      switch (code) {
+        case 'auth/email-already-in-use': return 'Este e-mail já está em uso.';
+        case 'auth/invalid-email': return 'E-mail inválido.';
+        case 'auth/weak-password': return 'A senha deve ter pelo menos 6 caracteres.';
+        case 'auth/user-not-found': return 'Usuário não encontrado.';
+        case 'auth/wrong-password': return 'Senha incorreta.';
+        default: return 'Erro: ' + code;
+      }
+    }
   </script>
 </body>
 </html>
+
