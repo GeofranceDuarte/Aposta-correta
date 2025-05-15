@@ -121,43 +121,43 @@
     .stats span {
       display: block;
     }
+
     .loading-animation {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: #58a6ff;
-    margin-top: 20px;
-    font-size: 1.2rem;
-    flex-wrap: wrap;
-  }
-
-  .loading-animation span {
-    width: 10px;
-    height: 10px;
-    background-color: #58a6ff;
-    border-radius: 50%;
-    animation: bounce 1.2s infinite ease-in-out;
-  }
-
-  .loading-animation span:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  .loading-animation span:nth-child(3) {
-    animation-delay: 0.4s;
-  }
-
-  @keyframes bounce {
-    0%, 80%, 100% {
-      transform: translateY(0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      flex-wrap: wrap;
     }
-    40% {
-      transform: translateY(-15px);
-    }
-  }
 
+    .loading-animation span {
+      width: 10px;
+      height: 10px;
+      background-color: #58a6ff;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .loading-animation span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-animation span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-15px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -165,6 +165,18 @@
   <img src="aposta-correta-logo.png" alt="Logo Aposta Correta" class="logo-img">
 
   <div class="game-list" id="gamesContainer">Carregando jogos...</div>
+
+  <!-- BLOCO DE ANIMAÇÃO + MENSAGEM -->
+  <div id="noGamesContainer" style="display: none; flex-direction: column; align-items: center; margin-top: 2rem;">
+    <div class="loading-animation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div style="margin-top: 1rem; font-size: 1.1rem; color: #c9d1d9; font-weight: 500;">
+      Nenhum jogo com os critérios no momento.
+    </div>
+  </div>
 
   <script src="script.js"></script>
 
