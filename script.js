@@ -24,7 +24,11 @@ async function fetchLiveMatches() {
     gamesContainer.innerHTML = "";
 
     if (filtered.length === 0) {
-      gamesContainer.innerHTML = "Nenhum jogo com os critérios no momento.";
+      gamesContainer.innerHTML = `
+        <div class="loading-animation" title="Aguardando jogos...">
+          <span></span><span></span><span></span>
+          <span style="margin-left:10px;">Nenhum jogo com os critérios no momento.</span>
+        </div>`;
       return;
     }
 
@@ -36,8 +40,10 @@ async function fetchLiveMatches() {
       const odds = parseFloat((Math.random() * (1.15 - 1.03) + 1.03)).toFixed(2);
       const stats = game.statistics;
 
-      // Coletando novas informações
+      // Pegando o tempo da partida
       const time = status.elapsed ? `${status.elapsed}'` : "Aguarde...";
+
+      // Estatísticas (pode ser vazio, por isso o fallback para 0)
       const yellowCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Yellow Cards")?.value || 0;
       const yellowCardsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Yellow Cards")?.value || 0;
       const redCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Red Cards")?.value || 0;
@@ -96,3 +102,4 @@ function getStatusIcon(short) {
 
 fetchLiveMatches();
 setInterval(fetchLiveMatches, 60000);
+
