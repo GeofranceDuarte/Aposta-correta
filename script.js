@@ -37,7 +37,7 @@ async function fetchLiveMatches() {
       const { home: gHome, away: gAway } = game.goals;
       const status = game.fixture.status;
       const league = game.league;
-      const odds = parseFloat((Math.random() * (1.15 - 1.03) + 1.03)).toFixed(2);
+      const odds = parseFloat((Math.random() * (1.15 - 1.02) + 1.02)).toFixed(2);
       const stats = game.statistics || [];
 
       const time = status.elapsed ? `${status.elapsed}'` : "Aguarde...";
