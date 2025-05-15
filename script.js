@@ -1,8 +1,10 @@
 const apiKey = "8f612f2a4bb97e35422cf82fb9b7041f";
 const gamesContainer = document.getElementById("gamesContainer");
+const noGamesContainer = document.getElementById("noGamesContainer"); // <-- PEGANDO O BLOCO
 
 async function fetchLiveMatches() {
   gamesContainer.innerHTML = "Carregando jogos...";
+  noGamesContainer.style.display = "none"; // Oculta mensagem enquanto carrega
 
   const url = "https://v3.football.api-sports.io/fixtures?live=all";
   const headers = {
@@ -24,13 +26,11 @@ async function fetchLiveMatches() {
     gamesContainer.innerHTML = "";
 
     if (filtered.length === 0) {
-      gamesContainer.innerHTML = `
-        <div class="loading-animation" title="Aguardando jogos...">
-          <span></span><span></span><span></span>
-          <span style="margin-left:10px;">Nenhum jogo com os critérios no momento.</span>
-        </div>`;
+      noGamesContainer.style.display = "flex"; // Exibe animação e mensagem
       return;
     }
+
+    noGamesContainer.style.display = "none"; // Oculta se houver jogos
 
     filtered.forEach(game => {
       const { home, away } = game.teams;
@@ -38,12 +38,10 @@ async function fetchLiveMatches() {
       const status = game.fixture.status;
       const league = game.league;
       const odds = parseFloat((Math.random() * (1.15 - 1.03) + 1.03)).toFixed(2);
-      const stats = game.statistics;
+      const stats = game.statistics || [];
 
-      // Pegando o tempo da partida
       const time = status.elapsed ? `${status.elapsed}'` : "Aguarde...";
 
-      // Estatísticas (pode ser vazio, por isso o fallback para 0)
       const yellowCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Yellow Cards")?.value || 0;
       const yellowCardsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Yellow Cards")?.value || 0;
       const redCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Red Cards")?.value || 0;
@@ -52,15 +50,15 @@ async function fetchLiveMatches() {
       const possessionAway = stats.find(stat => stat.team.id === away.id && stat.type === "Possession")?.value || 0;
       const shotsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Shots")?.value || 0;
       const shotsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Shots")?.value || 0;
-      
+
       const statusIcon = getStatusIcon(status.short);
       const statusText = status.long;
 
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <div class="league" style="font-size: 0.85rem; margin-bottom: 0.4rem; color: #8b949e;">
-          <img src="${league.logo}" alt="Logo da liga" style="height: 16px; vertical-align: middle; margin-right: 5px;">
+        <div class="league">
+          <img src="${league.logo}" alt="Logo da liga">
           ${league.name} - ${league.country}
         </div>
         <div class="teams">
@@ -85,6 +83,7 @@ async function fetchLiveMatches() {
 
   } catch (err) {
     gamesContainer.innerHTML = "Erro ao buscar os jogos.";
+    noGamesContainer.style.display = "none";
     console.error(err);
   }
 }
@@ -102,4 +101,3 @@ function getStatusIcon(short) {
 
 fetchLiveMatches();
 setInterval(fetchLiveMatches, 60000);
-
