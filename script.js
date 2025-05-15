@@ -1,10 +1,19 @@
-const apiKey = "8f612f2a4bb97e35422cf82fb9b7041f";
+const apiKey = "e1db2069903286a3b62359e4450f69fd"; // Usando a nova chave
 const gamesContainer = document.getElementById("gamesContainer");
-const noGamesContainer = document.getElementById("noGamesContainer"); // <-- PEGANDO O BLOCO
+const noGamesContainer = document.getElementById("noGamesContainer");
 
 async function fetchLiveMatches() {
+  const now = new Date();
+  const hour = now.getHours();
+
+  // Pula se for entre meia-noite e 8 da manhã
+  if (hour >= 0 && hour < 8) {
+    console.log("⏰ Fora do horário de requisição (00h - 08h).");
+    return;
+  }
+
   gamesContainer.innerHTML = "Carregando jogos...";
-  noGamesContainer.style.display = "none"; // Oculta mensagem enquanto carrega
+  noGamesContainer.style.display = "none";
 
   const url = "https://v3.football.api-sports.io/fixtures?live=all";
   const headers = {
@@ -26,11 +35,11 @@ async function fetchLiveMatches() {
     gamesContainer.innerHTML = "";
 
     if (filtered.length === 0) {
-      noGamesContainer.style.display = "flex"; // Exibe animação e mensagem
+      noGamesContainer.style.display = "flex";
       return;
     }
 
-    noGamesContainer.style.display = "none"; // Oculta se houver jogos
+    noGamesContainer.style.display = "none";
 
     filtered.forEach(game => {
       const { home, away } = game.teams;
@@ -90,14 +99,15 @@ async function fetchLiveMatches() {
 
 function getStatusIcon(short) {
   switch (short) {
-    case "1H": return "fas fa-clock";            // Primeiro tempo
-    case "2H": return "fas fa-stopwatch";        // Segundo tempo
-    case "HT": return "fas fa-mug-hot";          // Intervalo
-    case "FT": return "fas fa-flag-checkered";   // Encerrado
-    case "NS": return "fas fa-hourglass-start";  // Ainda não começou
+    case "1H": return "fas fa-clock";
+    case "2H": return "fas fa-stopwatch";
+    case "HT": return "fas fa-mug-hot";
+    case "FT": return "fas fa-flag-checkered";
+    case "NS": return "fas fa-hourglass-start";
     default:   return "fas fa-info-circle";
   }
 }
 
+// Requisição a cada 50 minutos
 fetchLiveMatches();
-setInterval(fetchLiveMatches, 60000);
+setInterval(fetchLiveMatches, 50 * 60 * 1000);
