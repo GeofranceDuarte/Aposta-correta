@@ -1,12 +1,22 @@
-const apiKey = "e1db2069903286a3b62359e4450f69fd"; // Usando a nova chave
+const apiKey = "e1db2069903286a3b62359e4450f69fd";
 const gamesContainer = document.getElementById("gamesContainer");
 const noGamesContainer = document.getElementById("noGamesContainer");
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+function getMatchPeriod(minutes) {
+  if (minutes <= 45) return "1º Tempo";
+  if (minutes > 45 && minutes <= 60) return "Intervalo";
+  return "2º Tempo";
+}
 
 async function fetchLiveMatches() {
   const now = new Date();
   const hour = now.getHours();
 
-  // Pula se for entre meia-noite e 8 da manhã
   if (hour >= 0 && hour < 8) {
     console.log("⏰ Fora do horário de requisição (00h - 08h).");
     return;
@@ -15,75 +25,76 @@ async function fetchLiveMatches() {
   gamesContainer.innerHTML = "Carregando jogos...";
   noGamesContainer.style.display = "none";
 
-  const url = "https://v3.football.api-sports.io/fixtures?live=all";
-  const headers = {
-    "x-apisports-key": apiKey
-  };
+  const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=us,eu&markets=h2h&oddsFormat=decimal&apiKey=${apiKey}`;
 
   try {
-    const res = await fetch(url, { headers });
+    const res = await fetch(url);
     const data = await res.json();
-    console.log("Resposta da API:", data);
 
-    const filtered = data.response.filter(f => {
-      const goals = f.goals;
-      if (!goals || goals.home === null || goals.away === null) return false;
-      const diff = Math.abs(goals.home - goals.away);
-      return diff === 2;
-    });
-
-    gamesContainer.innerHTML = "";
-
-    if (filtered.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
       noGamesContainer.style.display = "flex";
+      gamesContainer.innerHTML = "";
       return;
     }
 
+    const filtered = data.filter(game => {
+      if (game.status !== "live") return false;
+      if (!game.scores) return false;
+
+      const homeScore = game.scores[0]?.score;
+      const awayScore = game.scores[1]?.score;
+
+      if (homeScore == null || awayScore == null) return false;
+
+      const diff = Math.abs(homeScore - awayScore);
+      return diff === 2;
+    });
+
+    if (filtered.length === 0) {
+      noGamesContainer.style.display = "flex";
+      gamesContainer.innerHTML = "";
+      return;
+    }
+
+    gamesContainer.innerHTML = "";
     noGamesContainer.style.display = "none";
 
     filtered.forEach(game => {
-      const { home, away } = game.teams;
-      const { home: gHome, away: gAway } = game.goals;
-      const status = game.fixture.status;
-      const league = game.league;
-      const odds = parseFloat((Math.random() * (1.15 - 1.02) + 1.02)).toFixed(2);
-      const stats = game.statistics || [];
+      const home = game.home_team;
+      const away = game.away_team;
+      const homeScore = game.scores[0]?.score ?? "-";
+      const awayScore = game.scores[1]?.score ?? "-";
+      const league = game.sport_nice;
+      const commenceTime = new Date(game.commence_time);
+      const timeElapsed = Math.floor((Date.now() - commenceTime.getTime()) / 60000);
+      const matchPeriod = getMatchPeriod(timeElapsed);
 
-      const time = status.elapsed ? `${status.elapsed}'` : "Aguarde...";
-
-      const yellowCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Yellow Cards")?.value || 0;
-      const yellowCardsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Yellow Cards")?.value || 0;
-      const redCardsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Red Cards")?.value || 0;
-      const redCardsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Red Cards")?.value || 0;
-      const possessionHome = stats.find(stat => stat.team.id === home.id && stat.type === "Possession")?.value || 0;
-      const possessionAway = stats.find(stat => stat.team.id === away.id && stat.type === "Possession")?.value || 0;
-      const shotsHome = stats.find(stat => stat.team.id === home.id && stat.type === "Shots")?.value || 0;
-      const shotsAway = stats.find(stat => stat.team.id === away.id && stat.type === "Shots")?.value || 0;
-
-      const statusIcon = getStatusIcon(status.short);
-      const statusText = status.long;
+      const simulatedOdd = (Math.random() * (1.20 - 1.02) + 1.02).toFixed(2);
 
       const card = document.createElement("div");
       card.className = "card";
+      card.style.border = "1px solid #ddd";
+      card.style.padding = "15px";
+      card.style.marginBottom = "15px";
+      card.style.borderRadius = "8px";
+      card.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+      card.style.background = "#fff";
+      card.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
       card.innerHTML = `
-        <div class="league">
-          <img src="${league.logo}" alt="Logo da liga">
-          ${league.name} - ${league.country}
+        <div style="font-weight:bold; font-size: 1.1em; margin-bottom: 5px;">${league}</div>
+        <div style="margin-bottom: 10px;">
+          <span style="font-weight: 600;">${home}</span> vs <span style="font-weight: 600;">${away}</span>
         </div>
-        <div class="teams">
-          <span class="team-home">${home.name}</span>
-          <span class="team-away">${away.name}</span>
+        <div style="font-size: 1.3em; margin-bottom: 8px;">
+          <strong>${homeScore} - ${awayScore}</strong>
         </div>
-        <div class="score">${gHome} - ${gAway}</div>
-        <div class="odds">🎯 Odd Simulada: <strong>${odds}</strong></div>
-        <div class="status" title="${statusText}">
-          <i class="${statusIcon}"></i> ${statusText} - ${time}
+        <div style="margin-bottom: 10px;">
+          <span><strong>Status:</strong> Ao Vivo - ${matchPeriod} (${timeElapsed} min)</span><br>
+          <span><strong>Início:</strong> ${formatDate(game.commence_time)}</span>
         </div>
-        <div class="game-stats">
-          <p><strong>Cartões Amarelos:</strong> ${home.name}: ${yellowCardsHome} | ${away.name}: ${yellowCardsAway}</p>
-          <p><strong>Cartões Vermelhos:</strong> ${home.name}: ${redCardsHome} | ${away.name}: ${redCardsAway}</p>
-          <p><strong>Posse de Bola:</strong> ${home.name}: ${possessionHome}% | ${away.name}: ${possessionAway}%</p>
-          <p><strong>Finalizações:</strong> ${home.name}: ${shotsHome} | ${away.name}: ${shotsAway}</p>
+        <div style="margin-bottom: 10px;">
+          🎯 Odd Simulada: <strong>${simulatedOdd}</strong>
         </div>
       `;
 
@@ -97,17 +108,5 @@ async function fetchLiveMatches() {
   }
 }
 
-function getStatusIcon(short) {
-  switch (short) {
-    case "1H": return "fas fa-clock";
-    case "2H": return "fas fa-stopwatch";
-    case "HT": return "fas fa-mug-hot";
-    case "FT": return "fas fa-flag-checkered";
-    case "NS": return "fas fa-hourglass-start";
-    default:   return "fas fa-info-circle";
-  }
-}
-
-// Requisição a cada 50 minutos
 fetchLiveMatches();
 setInterval(fetchLiveMatches, 50 * 60 * 1000);
