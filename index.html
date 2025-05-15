@@ -189,7 +189,7 @@
       apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
       authDomain: "apostacerta-ba573.firebaseapp.com",
       projectId: "apostacerta-ba573",
-      storageBucket: "apostacerta-ba573.firebasestorage.app",
+      storageBucket: "apostacerta-ba573.appspot.com", // ✅ Corrigido aqui
       messagingSenderId: "651513600994",
       appId: "1:651513600994:web:6bdd161f5cf1d177f037bb"
     };
@@ -199,9 +199,3 @@
 
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        window.location.href = "login.html"; // Redireciona para login se não estiver autenticado
-      }
-    });
-  </script>
-</body>
-</html>
