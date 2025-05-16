@@ -25,7 +25,7 @@ async function fetchLiveMatches() {
   gamesContainer.innerHTML = "Carregando jogos...";
   noGamesContainer.style.display = "none";
 
-  const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=us,eu&markets=h2h&oddsFormat=decimal&apiKey=${apiKey}`;
+  const url = `https://api.the-odds-api.com/v4/sports/soccer_epl/odds/?regions=eu&markets=h2h&oddsFormat=decimal&apiKey=${apiKey}`;
 
   try {
     const res = await fetch(url);
@@ -38,14 +38,10 @@ async function fetchLiveMatches() {
     }
 
     const filtered = data.filter(game => {
-      if (game.status !== "live") return false;
-      if (!game.scores) return false;
-
-      const homeScore = game.scores[0]?.score;
-      const awayScore = game.scores[1]?.score;
+      const homeScore = game.scores?.[0]?.score;
+      const awayScore = game.scores?.[1]?.score;
 
       if (homeScore == null || awayScore == null) return false;
-
       const diff = Math.abs(homeScore - awayScore);
       return diff === 2;
     });
@@ -60,44 +56,35 @@ async function fetchLiveMatches() {
     noGamesContainer.style.display = "none";
 
     filtered.forEach(game => {
-      const home = game.home_team;
-      const away = game.away_team;
-      const homeScore = game.scores[0]?.score ?? "-";
-      const awayScore = game.scores[1]?.score ?? "-";
-      const league = game.sport_nice;
+      const home = game.home_team || "Time da Casa";
+      const away = game.away_team || "Time Visitante";
+      const homeScore = game.scores?.[0]?.score ?? "-";
+      const awayScore = game.scores?.[1]?.score ?? "-";
+      const league = game.sport_title || "Liga Desconhecida";
       const commenceTime = new Date(game.commence_time);
       const timeElapsed = Math.floor((Date.now() - commenceTime.getTime()) / 60000);
       const matchPeriod = getMatchPeriod(timeElapsed);
-
-      const simulatedOdd = (Math.random() * (1.20 - 1.02) + 1.02).toFixed(2);
+      const simulatedOdd = (Math.random() * (1.15 - 1.03) + 1.03).toFixed(2);
 
       const card = document.createElement("div");
       card.className = "card";
-      card.style.border = "1px solid #ddd";
-      card.style.padding = "15px";
-      card.style.marginBottom = "15px";
-      card.style.borderRadius = "8px";
-      card.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
-      card.style.background = "#fff";
-      card.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-
       card.innerHTML = `
-        <div style="font-weight:bold; font-size: 1.1em; margin-bottom: 5px;">${league}</div>
-        <div style="margin-bottom: 10px;">
-          <span style="font-weight: 600;">${home}</span> vs <span style="font-weight: 600;">${away}</span>
+        <div class="league">
+          <i class="fas fa-trophy"></i> ${league}
         </div>
-        <div style="font-size: 1.3em; margin-bottom: 8px;">
-          <strong>${homeScore} - ${awayScore}</strong>
+        <div class="teams">
+          <span class="team-home">${home}</span>
+          <span class="team-away">${away}</span>
         </div>
-        <div style="margin-bottom: 10px;">
-          <span><strong>Status:</strong> Ao Vivo - ${matchPeriod} (${timeElapsed} min)</span><br>
+        <div class="score">${homeScore} - ${awayScore}</div>
+        <div class="status">
+          <i class="fas fa-play-circle"></i> ${matchPeriod} (${timeElapsed} min)
+        </div>
+        <div class="odds">🎯 Odd Simulada: ${simulatedOdd}</div>
+        <div class="stats">
           <span><strong>Início:</strong> ${formatDate(game.commence_time)}</span>
         </div>
-        <div style="margin-bottom: 10px;">
-          🎯 Odd Simulada: <strong>${simulatedOdd}</strong>
-        </div>
       `;
-
       gamesContainer.appendChild(card);
     });
 
@@ -109,4 +96,4 @@ async function fetchLiveMatches() {
 }
 
 fetchLiveMatches();
-setInterval(fetchLiveMatches, 50 * 60 * 1000);
+setInterval(fetchLiveMatches, 10 * 60 * 1000); // atualiza a cada 10 minutos
