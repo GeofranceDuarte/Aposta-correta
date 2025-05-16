@@ -1,23 +1,86 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
-    authDomain: "apostacerta-ba573.firebaseapp.com",
-    projectId: "apostacerta-ba573",
-    storageBucket: "apostacerta-ba573.appspot.com",
-    messagingSenderId: "651513600994",
-    appId: "1:651513600994:web:6bdd161f5cf1d177f037bb"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      // Redireciona se não estiver logado
-      window.location.href = "login.html";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aposta Certa - Jogos ao Vivo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: url('https://images.unsplash.com/photo-1606220838316-0951efb4d3c7') no-repeat center center fixed;
+      background-size: cover;
+      color: #333;
     }
-  });
-</script>
+    .logo {
+      text-align: center;
+      padding: 20px;
+    }
+    .logo img {
+      max-width: 120px;
+    }
+    .logo h1 {
+      font-size: 2em;
+      margin: 10px 0;
+      color: white;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      margin-top: 30px;
+    }
+    .no-games {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      color: #777;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="https://cdn-icons-png.flaticon.com/512/311/311365.png" alt="Logo da Aposta Certa">
+    <h1>Aposta Certa</h1>
+  </div>
+
+  <div class="container">
+    <div id="gamesContainer">Carregando jogos...</div>
+    <div id="noGamesContainer" class="no-games">Nenhum jogo com critério de 2 gols de diferença encontrado.</div>
+  </div>
+
+  <!-- Firebase Auth Protection + Dynamic Script Load -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
+      authDomain: "apostacerta-ba573.firebaseapp.com",
+      projectId: "apostacerta-ba573",
+      storageBucket: "apostacerta-ba573.appspot.com",
+      messagingSenderId: "651513600994",
+      appId: "1:651513600994:web:6bdd161f5cf1d177f037bb"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        // Carrega script.js somente se o usuário estiver logado
+        const script = document.createElement("script");
+        script.src = "script.js";
+        document.body.appendChild(script);
+      }
+    });
+  </script>
+</body>
+</html>
