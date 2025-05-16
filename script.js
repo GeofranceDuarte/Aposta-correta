@@ -84,4 +84,4 @@ async function fetchLiveMatches() {
 }
 
 fetchLiveMatches();
-setInterval(fetchLiveMatches, 60000); // Atualiza a cada 1 minuto
+setInterval(fetchLiveMatches, 15 * 60 * 1000); // Atualiza a cada 15 minutos
