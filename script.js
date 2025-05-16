@@ -1,6 +1,14 @@
+// script.js atualizado para manter o layout original e exibir jogos com exatamente 2 gols de diferença
+
 const apiKey = "e1db2069903286a3b62359e4450f69fd";
 const gamesContainer = document.getElementById("gamesContainer");
 const noGamesContainer = document.getElementById("noGamesContainer");
+
+function getMatchPeriod(minutes) {
+  if (minutes <= 45) return "1º Tempo";
+  if (minutes > 45 && minutes <= 60) return "Intervalo";
+  return "2º Tempo";
+}
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
@@ -10,49 +18,30 @@ function formatDate(dateStr) {
   });
 }
 
-function getMatchPeriod(minutes) {
-  if (minutes <= 45) return "1º Tempo";
-  if (minutes > 45 && minutes <= 60) return "Intervalo";
-  return "2º Tempo";
-}
-
 async function fetchLiveMatches() {
   const now = new Date();
   const hour = now.getHours();
 
-  // Bloqueio fora do horário
   if (hour >= 0 && hour < 8) {
-    console.log("⏰ Fora do horário de requisição (00h - 08h).");
     gamesContainer.innerHTML = "⚠️ A plataforma está disponível das 08h às 23h.";
     return;
   }
 
-  gamesContainer.innerHTML = "🔄 Carregando jogos...";
+  gamesContainer.innerHTML = "<div class='loading-animation'><span></span><span></span><span></span></div>";
   noGamesContainer.style.display = "none";
 
-  const url = `https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=us,eu&markets=h2h&oddsFormat=decimal&apiKey=${apiKey}`;
-
   try {
-    const response = await fetch(url);
+    const response = await fetch(`https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=eu&markets=h2h&oddsFormat=decimal&apiKey=${apiKey}`);
 
-    if (!response.ok) {
-      throw new Error(`Erro ${response.status} ao acessar a API`);
-    }
+    if (!response.ok) throw new Error("Erro ao buscar dados da API");
 
     const data = await response.json();
 
-    if (!Array.isArray(data) || data.length === 0) {
-      gamesContainer.innerHTML = "";
-      noGamesContainer.style.display = "flex";
-      return;
-    }
-
     const filteredGames = data.filter(game => {
-      if (game.status !== "live" || !game.scores) return false;
+      if (!game.scores || game.status !== "live") return false;
 
       const homeScore = game.scores[0]?.score;
       const awayScore = game.scores[1]?.score;
-
       if (homeScore == null || awayScore == null) return false;
 
       return Math.abs(homeScore - awayScore) === 2;
@@ -65,8 +54,6 @@ async function fetchLiveMatches() {
     }
 
     gamesContainer.innerHTML = "";
-    noGamesContainer.style.display = "none";
-
     filteredGames.forEach(game => {
       const home = game.home_team;
       const away = game.away_team;
@@ -77,44 +64,26 @@ async function fetchLiveMatches() {
       const timeElapsed = Math.floor((Date.now() - commenceTime.getTime()) / 60000);
       const matchPeriod = getMatchPeriod(timeElapsed);
 
-      const simulatedOdd = (Math.random() * (1.20 - 1.02) + 1.02).toFixed(2);
-
       const card = document.createElement("div");
       card.className = "card";
-      card.style.border = "1px solid #ddd";
-      card.style.padding = "15px";
-      card.style.marginBottom = "15px";
-      card.style.borderRadius = "8px";
-      card.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
-      card.style.background = "#fff";
-
       card.innerHTML = `
-        <div style="font-weight:bold; font-size: 1.1em; margin-bottom: 5px;">${league}</div>
-        <div style="margin-bottom: 10px;">
-          <span style="font-weight: 600;">${home}</span> vs <span style="font-weight: 600;">${away}</span>
+        <div class="league"><i class="fas fa-futbol"></i> ${league}</div>
+        <div class="teams">
+          <span class="team-home">${home}</span>
+          <span class="team-away">${away}</span>
         </div>
-        <div style="font-size: 1.3em; margin-bottom: 8px;">
-          <strong>${homeScore} - ${awayScore}</strong>
-        </div>
-        <div style="margin-bottom: 10px;">
-          <span><strong>Status:</strong> Ao Vivo - ${matchPeriod} (${timeElapsed} min)</span><br>
-          <span><strong>Início:</strong> ${formatDate(game.commence_time)}</span>
-        </div>
-        <div style="margin-bottom: 10px;">
-          🎯 Odd Simulada: <strong>${simulatedOdd}</strong>
-        </div>
+        <div class="score">${homeScore} - ${awayScore}</div>
+        <div class="status"><i class="fas fa-clock"></i> Ao Vivo - ${matchPeriod} (${timeElapsed} min)</div>
       `;
 
       gamesContainer.appendChild(card);
     });
-
   } catch (error) {
-    console.error("❌ Erro ao buscar os jogos:", error);
-    gamesContainer.innerHTML = "❌ Erro ao buscar os jogos. Tente novamente mais tarde.";
+    console.error("Erro ao carregar jogos:", error);
+    gamesContainer.innerHTML = "Erro ao carregar os jogos. Tente novamente mais tarde.";
     noGamesContainer.style.display = "none";
   }
 }
 
-// Executa ao carregar e a cada 50 minutos
 fetchLiveMatches();
-setInterval(fetchLiveMatches, 15 * 60 * 1000);
+setInterval(fetchLiveMatches, 50 * 60 * 1000);
