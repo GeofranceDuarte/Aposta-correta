@@ -2,85 +2,205 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aposta Certa - Jogos ao Vivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aposta Certa - Jogos Ao Vivo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: url('https://images.unsplash.com/photo-1606220838316-0951efb4d3c7') no-repeat center center fixed;
+      font-family: 'Inter', sans-serif;
+      background: url('stadiumback.png') no-repeat center center fixed;
       background-size: cover;
-      color: #333;
+      color: #c9d1d9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
     }
-    .logo {
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-color: rgba(13, 17, 23, 0.9);
+      z-index: -1;
+    }
+
+    .logo-img {
+      width: 220px;
+      margin-bottom: 1.5rem;
+    }
+
+    .game-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 20px rgba(88, 166, 255, 0.2);
+    }
+
+    .league {
+      font-size: 0.85rem;
+      margin-bottom: 0.4rem;
+      color: #8b949e;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .league img {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .teams {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .score {
       text-align: center;
-      padding: 20px;
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
     }
-    .logo img {
-      max-width: 120px;
+
+    .status {
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #8b949e;
     }
-    .logo h1 {
-      font-size: 2em;
-      margin: 10px 0;
-      color: white;
+
+    .odds {
+      margin-top: 0.5rem;
+      font-weight: 600;
+      color: #2ecc71;
     }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: rgba(255,255,255,0.95);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-      margin-top: 30px;
+
+    .team-home {
+      color: #f39c12;
     }
-    .no-games {
-      display: none;
+
+    .team-away {
+      color: #e74c3c;
+    }
+
+    .status i {
+      color: #58a6ff;
+    }
+
+    .stats {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #8b949e;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .stats span {
+      display: block;
+    }
+
+    .loading-animation {
+      display: flex;
       justify-content: center;
       align-items: center;
-      height: 200px;
-      color: #777;
-      font-size: 1.2em;
+      gap: 8px;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .loading-animation span {
+      width: 10px;
+      height: 10px;
+      background-color: #58a6ff;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .loading-animation span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-animation span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-15px);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <img src="https://cdn-icons-png.flaticon.com/512/311/311365.png" alt="Logo da Aposta Certa">
-    <h1>Aposta Certa</h1>
+  
+  <img src="aposta-correta-logo.png" alt="Logo Aposta Correta" class="logo-img">
+
+  <div class="game-list" id="gamesContainer">Carregando jogos...</div>
+
+  <!-- BLOCO DE ANIMAÇÃO + MENSAGEM -->
+  <div id="noGamesContainer" style="display: none; flex-direction: column; align-items: center; margin-top: 2rem;">
+    <div class="loading-animation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div style="margin-top: 1rem; font-size: 1.1rem; color: #c9d1d9; font-weight: 500;">
+      Nenhum jogo com os critérios no momento.
+    </div>
   </div>
 
-  <div class="container">
-    <div id="gamesContainer">Carregando jogos...</div>
-    <div id="noGamesContainer" class="no-games">Nenhum jogo com critério de 2 gols de diferença encontrado.</div>
-  </div>
+  <script src="script.js"></script>
 
-  <!-- Firebase Auth Protection + Dynamic Script Load -->
+  <!-- Firebase Auth Protection -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
-      authDomain: "apostacerta-ba573.firebaseapp.com",
-      projectId: "apostacerta-ba573",
-      storageBucket: "apostacerta-ba573.appspot.com",
-      messagingSenderId: "651513600994",
-      appId: "1:651513600994:web:6bdd161f5cf1d177f037bb"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyADiwq_whzdVCZUuz4HEjxfGsOj-WA-ueg",
+    authDomain: "apostacerta-ba573.firebaseapp.com",
+    projectId: "apostacerta-ba573",
+    storageBucket: "apostacerta-ba573.appspot.com",
+    messagingSenderId: "651513600994",
+    appId: "1:651513600994:web:6bdd161f5cf1d177f037bb"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-      } else {
-        // Carrega script.js somente se o usuário estiver logado
-        const script = document.createElement("script");
-        script.src = "script.js";
-        document.body.appendChild(script);
-      }
-    });
-  </script>
-</body>
-</html>
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      // Redireciona se não estiver logado
+      window.location.href = "login.html";
+    }
+  });
+</script>
