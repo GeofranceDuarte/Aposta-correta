@@ -1,6 +1,3 @@
-const apiFootballKey = "8f612f2a4bb97e35422cf82fb9b7041f"; // API-Football
-const oddsApiKey = "e1db2069903286a3b62359e4450f69fd"; // The Odds API
-
 const gamesContainer = document.getElementById("gamesContainer");
 const noGamesContainer = document.getElementById("noGamesContainer");
 
@@ -9,79 +6,84 @@ async function fetchLiveMatches() {
   noGamesContainer.style.display = "none";
 
   try {
-    // 1. Buscar jogos ao vivo com placar
-    const liveRes = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
-      headers: { "x-apisports-key": apiFootballKey }
+    const res = await fetch("https://api.sofascore.com/api/v1/sport/football/events/live");
+    const data = await res.json();
+    const allGames = data.events;
+
+    const filteredGames = allGames.filter(game => {
+      const homeGoals = game.homeScore.current;
+      const awayGoals = game.awayScore.current;
+      const timePeriod = game.time.period;
+      return Math.abs(homeGoals - awayGoals) === 2 && timePeriod === "SECOND_HALF";
     });
 
-    const liveData = await liveRes.json();
-    const allGames = liveData.response;
-
-    const gamesWith2GoalDiff = allGames.filter(g => {
-      const homeGoals = g.goals.home;
-      const awayGoals = g.goals.away;
-      return Math.abs(homeGoals - awayGoals) === 2;
-    });
-
-    if (gamesWith2GoalDiff.length === 0) {
+    if (filteredGames.length === 0) {
       gamesContainer.innerHTML = "";
       noGamesContainer.style.display = "flex";
       return;
     }
 
-    // 2. Buscar odds da The Odds API
-    const oddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/soccer/odds/?regions=eu&markets=h2h&oddsFormat=decimal&apiKey=${oddsApiKey}`);
-    const oddsData = await oddsRes.json();
-
     gamesContainer.innerHTML = "";
 
-    gamesWith2GoalDiff.forEach(game => {
-      const home = game.teams.home.name;
-      const away = game.teams.away.name;
-      const homeGoals = game.goals.home;
-      const awayGoals = game.goals.away;
-      const status = game.fixture.status.elapsed;
-      const league = game.league.name;
-
+    for (const game of filteredGames) {
+      const home = game.homeTeam.name;
+      const away = game.awayTeam.name;
+      const homeGoals = game.homeScore.current;
+      const awayGoals = game.awayScore.current;
+      const status = game.time.current;
+      const league = game.tournament.name;
+      const leagueIcon = game.tournament.category.flag; // exemplo: 'eng' -> https://api.sofascore.app/api/v1/unique-tournament/eng/image
       const winner = homeGoals > awayGoals ? home : away;
 
-      // Procurar odd aproximada
-      const oddGame = oddsData.find(o =>
-        (o.home_team === home && o.away_team === away) ||
-        (o.home_team === away && o.away_team === home)
-      );
+      const homeImg = `https://api.sofascore.app/api/v1/team/${game.homeTeam.id}/image`;
+      const awayImg = `https://api.sofascore.app/api/v1/team/${game.awayTeam.id}/image`;
+      const leagueImg = `https://api.sofascore.app/api/v1/unique-tournament/${game.tournament.uniqueTournament.slug}/image`;
 
+      // Obter odds do site (scraping não-oficial)
       let winnerOdd = "N/A";
-      if (oddGame && oddGame.bookmakers.length > 0) {
-        const h2h = oddGame.bookmakers[0].markets.find(m => m.key === "h2h");
+      try {
+        const oddsUrl = `https://api.digitalsport24.com/v1/widget/event-odds?eventId=${game.id}`;
+        const oddsRes = await fetch(oddsUrl);
+        const oddsJson = await oddsRes.json();
+
+        const h2h = oddsJson.odds.find(o => o.marketName === "1X2" || o.marketName === "Match Result");
         if (h2h) {
-          const outcome = h2h.outcomes.find(o => o.name === winner);
+          const outcome = h2h.bookmakers[0]?.selections.find(sel => sel.name.includes(winner));
           if (outcome) {
-            winnerOdd = outcome.price.toFixed(2);
+            winnerOdd = parseFloat(outcome.odds).toFixed(2);
           }
         }
+      } catch (e) {
+        console.warn("Odds não encontradas para:", home, "vs", away);
       }
 
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
-        <div class="league"><i class="fas fa-futbol"></i> ${league}</div>
+        <div class="league">
+          <img src="${leagueImg}" alt="${league}" class="league-icon"> ${league}
+        </div>
         <div class="teams">
-          <span class="team-home">${home}</span>
-          <span class="team-away">${away}</span>
+          <span class="team">
+            <img src="${homeImg}" alt="${home}" class="team-icon"> ${home}
+          </span>
+          <span class="team">
+            <img src="${awayImg}" alt="${away}" class="team-icon"> ${away}
+          </span>
         </div>
         <div class="score">${homeGoals} - ${awayGoals}</div>
-        <div class="status"><i class="fas fa-clock"></i> Ao Vivo - ${status} min</div>
+        <div class="status"><i class="fas fa-clock"></i> 2º Tempo - ${status}'</div>
         <div class="odds">Odd para o time vencedor (${winner}): <strong>${winnerOdd}</strong></div>
       `;
       gamesContainer.appendChild(card);
-    });
+    }
 
-  } catch (err) {
-    console.error("Erro ao carregar dados:", err);
+  } catch (error) {
+    console.error("Erro ao carregar jogos:", error);
     gamesContainer.innerHTML = "Erro ao carregar os jogos.";
   }
 }
 
 fetchLiveMatches();
-setInterval(fetchLiveMatches, 15 * 60 * 1000); // Atualiza a cada 15 minutos
+setInterval(fetchLiveMatches, 30 * 1000); // Atualiza a cada 30 segundos
+
