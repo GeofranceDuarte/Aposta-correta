@@ -2,7 +2,7 @@ const gamesContainer = document.getElementById("gamesContainer");
 const noGamesContainer = document.getElementById("noGamesContainer");
 
 // Sua API Key da API-Football
-const API_KEY = "22d09fd14e1718437b00944f0f22db6b";
+const API_KEY = "22d09fd14e1718437b00944f0f22db6b"; // Troque se necessário
 
 async function fetchLiveMatches() {
   gamesContainer.innerHTML = "Carregando jogos...";
@@ -24,16 +24,12 @@ async function fetchLiveMatches() {
       return;
     }
 
-    // Filtra jogos com diferença de 2 gols e no 2º tempo (segunda etapa)
+    // Filtra jogos com diferença de 2 ou mais gols, em qualquer tempo
     const filteredGames = data.response.filter(game => {
       const homeGoals = game.goals.home ?? 0;
       const awayGoals = game.goals.away ?? 0;
-      const timeStatus = game.fixture.status.long; // Exemplo: "2nd Half"
 
-      return (
-        Math.abs(homeGoals - awayGoals) === 2 &&
-        timeStatus.toLowerCase().includes("2nd half")
-      );
+      return Math.abs(homeGoals - awayGoals) >= 2;
     });
 
     if (filteredGames.length === 0) {
@@ -49,7 +45,7 @@ async function fetchLiveMatches() {
       const away = game.teams.away.name;
       const homeGoals = game.goals.home ?? 0;
       const awayGoals = game.goals.away ?? 0;
-      const elapsed = game.fixture.status.elapsed ?? 0; // minutos
+      const elapsed = game.fixture.status.elapsed ?? 0;
       const league = game.league.name;
       const leagueFlag = game.league.flag || "fallback-league.png";
       const homeLogo = game.teams.home.logo || "fallback-team.png";
@@ -57,7 +53,7 @@ async function fetchLiveMatches() {
 
       const winner = homeGoals > awayGoals ? home : away;
 
-      // Odds não disponíveis via API-Football gratuita
+      // Placeholder para odd futura (meta: 1.01 a 1.40)
       const winnerOdd = "N/A";
 
       const card = document.createElement("div");
@@ -75,7 +71,7 @@ async function fetchLiveMatches() {
           </span>
         </div>
         <div class="score">${homeGoals} - ${awayGoals}</div>
-        <div class="status"><i class="fas fa-clock"></i> 2º Tempo - ${elapsed}'</div>
+        <div class="status"><i class="fas fa-clock"></i> Tempo atual - ${elapsed}'</div>
         <div class="odds">Odd para o time vencedor (${winner}): <strong>${winnerOdd}</strong></div>
       `;
       gamesContainer.appendChild(card);
